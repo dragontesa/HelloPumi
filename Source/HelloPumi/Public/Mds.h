@@ -2,9 +2,6 @@
 #define BB8CC391_33DF_4946_8A98_86E4C47328BD
 
 //typedef MDS_ID_TYPE mds_id; // MDS_ID_TYPE will be defined in CMakeLists at build time
-typedef int MDS_ID_TYPE;
-typedef MDS_ID_TYPE mds_id;
-
 enum {
   MDS_VERTEX,
   MDS_EDGE,
@@ -16,6 +13,16 @@ enum {
   MDS_HEXAHEDRON,
   MDS_TYPES
 };
+
+typedef int MDS_ID_TYPE;
+typedef MDS_ID_TYPE mds_id;
+
+#define MDS_NONE -1
+#define MDS_LIVE -2
+
+#define ID(t,i) ((i)*MDS_TYPES + (t))
+#define TYPE(id) ((id) % MDS_TYPES)
+#define INDEX(id) ((id) / MDS_TYPES)
 
 struct mds {
   int d;
@@ -29,5 +36,16 @@ struct mds {
   mds_id* free[MDS_TYPES];
   mds_id first_free[MDS_TYPES];
 };
+
+#define MDS_SET_MAX 256
+
+struct mds_set {
+  int n;
+  mds_id e[MDS_SET_MAX];
+};
+
+extern int const mds_dim[MDS_TYPES];
+extern int const mds_degree[MDS_TYPES][4];
+extern int const* mds_types[MDS_TYPES][4];
 
 #endif /* BB8CC391_33DF_4946_8A98_86E4C47328BD */

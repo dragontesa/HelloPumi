@@ -33,27 +33,28 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
 
     IFileHandle* hFile = shf.Get();
     // 2. Read Header
-    SmbHeader smbHead = readSmbHeader(hFile);
+    SmbHeader smbHead;
+    bool ok = readSmbHeader(hFile,smbHead);
 
     // 3. Read SMB Mesh Data
-    unsigned smbMesh[SMB_TYPES];
-    bool ok = readSmbMesh(hFile, smbMesh);
+    SmbMeshData smbMesh;
+    ok = readSmbMesh(hFile, smbMesh);
     if (!ok) {
         UE_LOG(HelloPumiLog, Log, TEXT("failed to read smb mesh data"));
         return;
     }
-    
+
     // 4. Read Link Connection Data
     // 5. Read Vertex Positions and Parameter Coordinates
     // 6. 
 }
 
-SmbHeader UPumiGenerateMesh::readSmbHeader(IFileHandle* hFile)
+bool UPumiGenerateMesh::readSmbHeader(IFileHandle* hFile, SmbHeader& outHeader)
 {
-    return SmbHeader();
+    return false;
 }
 
-bool UPumiGenerateMesh::readSmbMesh(IFileHandle* hFile, unsigned outMeshData[SMB_TYPES])
+bool UPumiGenerateMesh::readSmbMesh(IFileHandle* hFile, SmbMeshData& outMeshData)
 {
     return true;
 }
