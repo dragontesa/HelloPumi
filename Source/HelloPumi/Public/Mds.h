@@ -48,4 +48,16 @@ extern int const mds_dim[MDS_TYPES];
 extern int const mds_degree[MDS_TYPES][4];
 extern int const* mds_types[MDS_TYPES][4];
 
+extern int smb2mds(int smb_type);
+extern int mds2smb(int mds_type);
+extern int down_degree(int t);
+
+// custom
+struct MdsData
+{
+  mds_id cap[MDS_TYPES];
+  double (*point)[3];
+  double (*param)[2];
+};
+
 #endif /* BB8CC391_33DF_4946_8A98_86E4C47328BD */

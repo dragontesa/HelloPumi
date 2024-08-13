@@ -1,11 +1,9 @@
 #include "Mds.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+// #include <stdlib.h>
+// #include <stdio.h>
+// #include <string.h>
+#include "Smb.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void reel_fail(const char* format, ...)
 {
@@ -16,12 +14,6 @@ void reel_protect(void)
 {
 
 }
-
-#ifdef __cplusplus
-}
-#endif
-
-
 
 static void* mds_realloc(void* p, size_t n)
 {
@@ -220,7 +212,6 @@ static void resize_up(struct mds* m, int from, int to,
   }
 }
 
-
 int mds_type(mds_id e)
 {
   return TYPE(e);
@@ -241,3 +232,35 @@ static mds_id* at_id(mds_id* a[MDS_TYPES], mds_id x)
   return &(a[TYPE(x)][INDEX(x)]);
 }
 
+int smb2mds(int smb_type)
+{
+  int const table[SMB_TYPES] =
+  {MDS_VERTEX
+  ,MDS_EDGE
+  ,MDS_TRIANGLE
+  ,MDS_QUADRILATERAL
+  ,MDS_HEXAHEDRON
+  ,MDS_WEDGE
+  ,MDS_PYRAMID
+  ,MDS_TETRAHEDRON};
+  return table[smb_type];
+}
+
+int mds2smb(int mds_type)
+{
+  int const table[MDS_TYPES] =
+  {SMB_VERT
+  ,SMB_EDGE
+  ,SMB_TRI
+  ,SMB_QUAD
+  ,SMB_PRIS
+  ,SMB_PYR
+  ,SMB_TET
+  ,SMB_HEX};
+  return table[mds_type];
+}
+
+int down_degree(int t)
+{
+  return mds_degree[t][mds_dim[t] - 1];
+}

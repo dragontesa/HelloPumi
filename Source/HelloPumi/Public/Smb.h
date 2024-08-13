@@ -30,13 +30,18 @@ struct SmbHeader
 
 struct SmbMeshData
 {
-   unsigned smbMesh[SMB_TYPES];
+   unsigned n[SMB_TYPES];
 };
 
 struct SmbVerts
 {
   double (*point)[3];
   double (*param)[2];
+};
+
+struct SmbConnect
+{
+  unsigned (*conn)[SMB_TYPES]; // unsigned [SMB_TYPES][cap]
 };
 
 
