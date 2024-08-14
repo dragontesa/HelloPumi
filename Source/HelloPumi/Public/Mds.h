@@ -44,6 +44,15 @@ struct mds_set {
   mds_id e[MDS_SET_MAX];
 };
 
+struct mds_links {
+  unsigned np;
+  unsigned* n;
+  unsigned* p;
+  unsigned** l;
+};
+#define MDS_LINKS_INIT {0,0,0,0}
+
+
 extern int const mds_dim[MDS_TYPES];
 extern int const mds_degree[MDS_TYPES][4];
 extern int const* mds_types[MDS_TYPES][4];
@@ -58,6 +67,23 @@ struct MdsData
   mds_id cap[MDS_TYPES];
   double (*point)[3];
   double (*param)[2];
+  struct mds_links links;
+
+  ~MdsData() {
+    if (point != nullptr)
+       delete [] point;
+    if (param != nullptr)
+       delete [] param;
+
+    if (links.p != nullptr)
+       delete [] links.p;
+    if (links.n != nullptr)
+       delete [] links.n;
+    if (links.l != nullptr) {
+      for (int i=0;i<links.np;++i)
+        delete [] links.l[i];
+    }
+  }
 };
 
 #endif /* BB8CC391_33DF_4946_8A98_86E4C47328BD */

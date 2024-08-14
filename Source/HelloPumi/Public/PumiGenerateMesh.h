@@ -22,10 +22,15 @@ class HELLOPUMI_API UPumiGenerateMesh : public UObject
 
     TSharedPtr<IFileHandle> openSbmFile(const TCHAR* smbFilePath, bool bAllowWrite);
 	void OnReadSmbProc(const TCHAR* smbFilePath);
+    
     bool readSmbHeader(IFileHandle* hFile, SmbHeader& outHeader);
     bool readSmbMeshData(IFileHandle* hFile, SmbMeshData& outMeshData);
-    bool readSmbConn(IFileHandle* hFile, SmbConnect& outConn, mds_id cap[MDS_TYPES]);
-	bool readSmbVerts(IFileHandle* hFile, SmbVerts& outVert);
     bool createMdsData(MdsData& outMdsData, const SmbMeshData& smbMeshData);
+
+    bool readSmbConn(IFileHandle* hFile, SmbConnect& outConn, mds_id mdsCap[MDS_TYPES]);
+	bool readSmbPointsToMds(IFileHandle* hFile, MdsData& outMdsData, unsigned smbVerts, unsigned version);
+    bool readSmbRemotesToMds(IFileHandle* hFile, mds_links& outMdsRemotes);
     void freeMdsData(const MdsData& mdsData);
+
+    
 };

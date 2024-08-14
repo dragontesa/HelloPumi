@@ -33,15 +33,18 @@ struct SmbMeshData
    unsigned n[SMB_TYPES];
 };
 
-struct SmbVerts
-{
-  double (*point)[3];
-  double (*param)[2];
-};
-
 struct SmbConnect
 {
-  unsigned (*conn)[SMB_TYPES]; // unsigned [SMB_TYPES][cap]
+  unsigned* conn[SMB_TYPES]; // unsigned [cap][SMB_TYPES]
+  SmbConnect() {
+    for (int i=0;i<SMB_TYPES;++i,conn[i]=nullptr;);
+  }
+  ~SmbConnect() {
+    for (int i=0;i<SMB_TYPES; ++i) {
+      if (conn[i] != nullptr)
+         delete conn[i];
+    }
+  }
 };
 
 
