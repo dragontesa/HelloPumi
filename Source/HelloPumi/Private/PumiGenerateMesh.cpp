@@ -172,16 +172,23 @@ bool UPumiGenerateMesh::readSmbPointsToMds(
 }
 
 
-bool UPumiGenerateMesh::readSmbRemotesToMds(IFileHandle* hFile, mds_links& outMdsRemotes)
+bool UPumiGenerateMesh::readSmbRemotesToMds(IFileHandle* hFile, mds_links* outLinkes)
 {
-    READ_UNSIGNEDS(hFile, outMdsRemotes.np);
-    if (!outMdsRemotes.np) {
-        UE_LOG(HelloPumiLog, Log, TEXT("failed to read smb points"));
+    mds_links* links = outMdsRemotes;
+    READ_UNSIGNEDS(hFile, links.np);
+    if (!links.np) {
+        UE_LOG(HelloPumiLog, Log, TEXT("not found remote info from smb"));
         return false;
     }
+
+  links->p = new unsigned[links->np * sizeof(unsigned))];
+  read_unsigneds(hFile, links->p, links->np)];
+  links->n = new unsigned[links->np * sizeof(unsigned))];
+  links->l = new unsigned[links->np * sizeof(unsigned*))];
+  read_unsigneds(hFile, links->n, links->np);
 }
 
 void UPumiGenerateMesh::freeMdsData(const MdsData& mdsData)
 {
-
+    
 }

@@ -29,8 +29,8 @@ class HELLOPUMI_API UPumiGenerateMesh : public UObject
 
     bool readSmbConn(IFileHandle* hFile, SmbConnect& outConn, mds_id mdsCap[MDS_TYPES]);
 	bool readSmbPointsToMds(IFileHandle* hFile, MdsData& outMdsData, unsigned smbVerts, unsigned version);
-    bool readSmbRemotesToMds(IFileHandle* hFile, mds_links& outMdsRemotes);
-    void freeMdsData(const MdsData& mdsData);
+    bool readSmbRemotesToMds(IFileHandle* hFile, mds_links* outLinkes);
 
-    
+    void freeMdsData(const MdsData& mdsData);
+   
 };
