@@ -37,7 +37,7 @@ struct SmbConnect
 {
   unsigned* conn[SMB_TYPES]; // unsigned [cap][SMB_TYPES]
   SmbConnect() {
-    for (int i=0;i<SMB_TYPES;++i,conn[i]=nullptr;);
+    for (int i=0;i<SMB_TYPES;++i,conn[i]=nullptr);
   }
   ~SmbConnect() {
     for (int i=0;i<SMB_TYPES; ++i) {

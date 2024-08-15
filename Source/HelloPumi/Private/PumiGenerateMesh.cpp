@@ -96,6 +96,11 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
     }
 
     // 6. Read Links
+    ok = readSmbRemotesToMds(hFile, &mdsData.links);
+    if (!ok) {
+        UE_LOG(HelloPumiLog, Log, TEXT("failed to read smb remotes"));
+        return;
+    }
 
 }
 
@@ -148,7 +153,7 @@ bool UPumiGenerateMesh::readSmbConn(
         down.n = down_degree(type_mds);
         cap = mdsCap[type_mds];
         size = down.n * cap;
-        conn = new unsigned[size*sizeof(*conn)];
+        conn = new unsigned[size];
         outSmbConn[i] = conn;
         read_unsigneds(hFile,conn, size);
     }
@@ -164,7 +169,7 @@ bool UPumiGenerateMesh::readSmbPointsToMds(
 {
     double *point = &outMdsData.point[0][0];
     double *param = &outMdsData.param[0][0];
-    read_unsigneds(hFile, point, 3 * smbVerts);
+    read_doubles(hFile, point, 3 * smbVerts);
     if (version >= 2)
         read_doubles(hFile, param, 2 * smbVerts);
     
@@ -174,18 +179,25 @@ bool UPumiGenerateMesh::readSmbPointsToMds(
 
 bool UPumiGenerateMesh::readSmbRemotesToMds(IFileHandle* hFile, mds_links* outLinkes)
 {
-    mds_links* links = outMdsRemotes;
-    READ_UNSIGNEDS(hFile, links.np);
-    if (!links.np) {
+    mds_links* links = outLinkes;
+    READ_UNSIGNEDS(hFile, links->np);
+    if (!links->np) {
         UE_LOG(HelloPumiLog, Log, TEXT("not found remote info from smb"));
         return false;
     }
 
-  links->p = new unsigned[links->np * sizeof(unsigned))];
-  read_unsigneds(hFile, links->p, links->np)];
-  links->n = new unsigned[links->np * sizeof(unsigned))];
-  links->l = new unsigned[links->np * sizeof(unsigned*))];
+  links->p = new unsigned[links->np];
+  read_unsigneds(hFile, links->p, links->np);
+  links->n = new unsigned[links->np];
+  links->l = new unsigned*[links->np];
   read_unsigneds(hFile, links->n, links->np);
+  for (int i=0;i<links->np;++i)
+  {
+    if (sizeof(mds_id) == 4) check(links->n[i] < MAX_ENTITIES);
+    links->l[i] = new unsigned[links->n[i]];
+    read_unsigneds(hFile, links->l[i], links->n[i]);
+  }
+  return true;
 }
 
 void UPumiGenerateMesh::freeMdsData(const MdsData& mdsData)
