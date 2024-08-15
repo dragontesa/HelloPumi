@@ -80,7 +80,7 @@ struct MdsData
     if (links.n != nullptr)
        delete [] links.n;
     if (links.l != nullptr) {
-      for (int i=0;i<links.np;++i)
+      for (unsigned i=0;i<links.np;++i)
         delete [] links.l[i];
     }
   }

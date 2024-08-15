@@ -19,9 +19,10 @@ UCLASS()
 class HELLOPUMI_API UPumiGenerateMesh : public UObject
 {
 	GENERATED_BODY()
-
-    TSharedPtr<IFileHandle> openSbmFile(const TCHAR* smbFilePath, bool bAllowWrite);
+public:
 	void OnReadSmbProc(const TCHAR* smbFilePath);
+protected:
+    TSharedPtr<IFileHandle> openSbmFile(const TCHAR* smbFilePath, bool bAllowWrite);
     
     bool readSmbHeader(IFileHandle* hFile, SmbHeader& outHeader);
     bool readSmbMeshData(IFileHandle* hFile, SmbMeshData& outMeshData);

@@ -191,7 +191,7 @@ bool UPumiGenerateMesh::readSmbRemotesToMds(IFileHandle* hFile, mds_links* outLi
   links->n = new unsigned[links->np];
   links->l = new unsigned*[links->np];
   read_unsigneds(hFile, links->n, links->np);
-  for (int i=0;i<links->np;++i)
+  for (unsigned i=0;i<links->np;++i)
   {
     if (sizeof(mds_id) == 4) check(links->n[i] < MAX_ENTITIES);
     links->l[i] = new unsigned[links->n[i]];
