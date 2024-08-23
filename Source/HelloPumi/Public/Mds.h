@@ -14,7 +14,7 @@ enum {
   MDS_TYPES
 };
 
-typedef int MDS_ID_TYPE;
+typedef unsigned MDS_ID_TYPE;
 typedef MDS_ID_TYPE mds_id;
 
 #define MDS_NONE -1
@@ -60,6 +60,7 @@ extern int const* mds_types[MDS_TYPES][4];
 extern int smb2mds(int smb_type);
 extern int mds2smb(int mds_type);
 extern int down_degree(int t);
+extern mds_id mds_identify(int type, mds_id idx);
 
 // custom
 struct MdsData
@@ -67,7 +68,9 @@ struct MdsData
   mds_id cap[MDS_TYPES];
   double (*point)[3];
   double (*param)[2];
+  int    (*indics)[3];
   struct mds_links links;
+  mds_set down;
 
   ~MdsData() {
     if (point != nullptr)

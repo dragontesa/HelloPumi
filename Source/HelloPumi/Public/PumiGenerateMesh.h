@@ -5,12 +5,21 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "HAL/PlatformFileManager.h"
+#include "Math/MathFwd.h"
 #include "GenericPlatform/GenericPlatformFile.h"
+#include "Generators/MeshShapeGenerator.h"
+#include "Generators/SweepGenerator.h"
 #include "Smb.h"
 #include "Mds.h"
 #include "PumiGenerateMesh.generated.h"
 
+using namespace UE::Geometry;
+
 DECLARE_LOG_CATEGORY_EXTERN(HelloPumiLog, Log, All);
+
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FPumiPointsDataLoadFinished, const TArray<FVector>&, points, const TArray<FIntVector3>&, indics);
+
+
 
 /**
  * 
@@ -20,7 +29,10 @@ class HELLOPUMI_API UPumiGenerateMesh : public UObject
 {
 	GENERATED_BODY()
 public:
+     FPumiPointsDataLoadFinished DelPointsDataLoadFinished;
 	void OnReadSmbProc(const TCHAR* smbFilePath);
+
+    
 protected:
     TSharedPtr<IFileHandle> openSbmFile(const TCHAR* smbFilePath, bool bAllowWrite);
     
@@ -28,10 +40,14 @@ protected:
     bool readSmbMeshData(IFileHandle* hFile, SmbMeshData& outMeshData);
     bool createMdsData(MdsData& outMdsData, const SmbMeshData& smbMeshData);
 
-    bool readSmbConn(IFileHandle* hFile, SmbConnect& outConn, mds_id mdsCap[MDS_TYPES]);
-	bool readSmbPointsToMds(IFileHandle* hFile, MdsData& outMdsData, unsigned smbVerts, unsigned version);
-    bool readSmbRemotesToMds(IFileHandle* hFile, mds_links* outLinkes);
+    bool readSmbConn(IFileHandle* hFile, SmbConnect& outConn, MdsData& outMdsData, mds_id mdsCap[MDS_TYPES]);
+	bool readSmbPoints(IFileHandle* hFile, MdsData& outMdsData, unsigned smbVerts, unsigned version);
+    bool readSmbRemotes(IFileHandle* hFile, mds_links* outLinkes);
 
     void freeMdsData(const MdsData& mdsData);
-   
+
+
+    private:
+    TArray<FVector> mdsPoints;
+    TArray<FIntVector3> mdsIndics;
 };

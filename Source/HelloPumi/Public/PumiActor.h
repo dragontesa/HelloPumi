@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "Math/MathFwd.h"
 #include "PumiActor.generated.h"
 
 UCLASS(Blueprintable, meta = (DisplayName = "Hello Pumi Actor"), ClassGroup = (Custom))
@@ -19,6 +20,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hello Pumi Actor")
 	FString smbFile;
 
+
+    // callbacked from PumiGenerateMesh
+	UFUNCTION()
+    void OnPumiPointsDataLoaded(const TArray<FVector>& points, const TArray<FIntVector3>& indics);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -31,6 +37,6 @@ public:
 
 	private:
 	UPROPERTY(VisibleAnywhere)
-	UProceduralMeshComponent * mesh;
+	TObjectPtr<UProceduralMeshComponent> mesh;
 	class UPumiGenerateMesh* pumiGenerateMesh;
 };

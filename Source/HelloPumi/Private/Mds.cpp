@@ -4,32 +4,6 @@
 // #include <string.h>
 #include "Smb.h"
 
-
-void reel_fail(const char* format, ...)
-{
-}
-//  __attribute__((noreturn,format(printf,1,2)));
-
-void reel_protect(void)
-{
-
-}
-
-static void* mds_realloc(void* p, size_t n)
-{
-  if ((!p)&&(!n))
-    return NULL;
-  if (n)
-    p = realloc(p,n);
-  else {
-    free(p);
-    p = NULL;
-  }
-  if ((!p) && (n))
-    reel_fail("MDS ran out of memory!\n");
-  return p;
-}
-
 #define REALLOC(r,p,n) ((p)=(r)mds_realloc(p,(n)*sizeof(*(p))))
 #define ZERO(o) memset(&(o),0,sizeof(o))
 
@@ -159,15 +133,16 @@ static int const H21[] = {0,1,0,2,0,3,0,4
                          ,1,5,2,5,3,5,4,5};
 
 int const* mds_types[MDS_TYPES][4] =
-{{0 ,0 ,0 ,0}
-,{e0,0 ,0 ,0}
-,{t0,t1,0 ,0}
-,{q0,q1,0 ,0}
-,{W0,W1,W2,0}
-,{P0,P1,P2,0}
-,{T0,T1,T2,0}
-,{H0,H1,H2,0}
+{{0 ,0 ,0 ,0}  //VERTEX
+,{e0,0 ,0 ,0}  //EDGE
+,{t0,t1,0 ,0}  //TRI
+,{q0,q1,0 ,0}  //QUADRI
+,{W0,W1,W2,0}  //WEDGE
+,{P0,P1,P2,0}  //PYRAMID
+,{T0,T1,T2,0}  //TETRAHEDRON
+,{H0,H1,H2,0}  //HEXAHEDRON
 };
+
 static int const* convs[MDS_TYPES][4][4] =
 {{{0,0  ,0,0},{0  ,0,0  ,0},{0,0  ,0,0},{0,0,0,0}}
 ,{{0,0  ,0,0},{0  ,0,0  ,0},{0,0  ,0,0},{0,0,0,0}}
@@ -178,6 +153,33 @@ static int const* convs[MDS_TYPES][4][4] =
 ,{{0,T01,0,0},{T10,0,T12,0},{0,T21,0,0},{0,0,0,0}}
 ,{{0,H01,0,0},{H10,0,H12,0},{0,H21,0,0},{0,0,0,0}}
 };
+
+
+void reel_fail(const char* format, ...)
+{
+}
+//  __attribute__((noreturn,format(printf,1,2)));
+
+void reel_protect(void)
+{
+
+}
+
+static void* mds_realloc(void* p, size_t n)
+{
+  if ((!p)&&(!n))
+    return NULL;
+  if (n)
+    p = realloc(p,n);
+  else {
+    free(p);
+    p = NULL;
+  }
+  if ((!p) && (n))
+    reel_fail("MDS ran out of memory!\n");
+  return p;
+}
+
 
 static void resize_down(struct mds* m, int from, int to,
     mds_id new_cap[MDS_TYPES])
