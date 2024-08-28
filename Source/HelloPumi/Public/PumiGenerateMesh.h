@@ -17,7 +17,7 @@ using namespace UE::Geometry;
 
 DECLARE_LOG_CATEGORY_EXTERN(HelloPumiLog, Log, All);
 
-DECLARE_DYNAMIC_DELEGATE_TwoParams(FPumiPointsDataLoadFinished, const TArray<FVector>&, points, const TArray<FIntVector3>&, indics);
+DECLARE_DYNAMIC_DELEGATE_TwoParams(FPumiPointsDataLoadFinished, const TArray<FVector>&, points, const TArray<int32>&, indics);
 
 
 
@@ -45,9 +45,4 @@ protected:
     bool readSmbRemotes(IFileHandle* hFile, mds_links* outLinkes);
 
     void freeMdsData(const MdsData& mdsData);
-
-
-    private:
-    TArray<FVector> mdsPoints;
-    TArray<FIntVector3> mdsIndics;
 };

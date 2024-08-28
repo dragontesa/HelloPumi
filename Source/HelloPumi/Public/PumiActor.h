@@ -23,7 +23,7 @@ public:
 
     // callbacked from PumiGenerateMesh
 	UFUNCTION()
-    void OnPumiPointsDataLoaded(const TArray<FVector>& points, const TArray<FIntVector3>& indics);
+    void OnPumiPointsDataLoaded(const TArray<FVector>& points, const TArray<int32>& indics);
 
 protected:
 	// Called when the game starts or when spawned
@@ -31,6 +31,10 @@ protected:
 	virtual void PostActorCreated() override;
 	virtual void PostLoad() override;
 
+private:
+    void GenerateProceduralMesh100(const TArray<FVector>& points, const TArray<int32>& indics);
+	void GenerateProceduralMesh200(const TArray<FVector>& points, const TArray<int32>& indics);
+	
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

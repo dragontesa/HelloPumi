@@ -72,16 +72,30 @@ struct MdsData
   struct mds_links links;
   mds_set down;
 
+   MdsData()
+   {
+      point = nullptr;
+      param = nullptr;
+      indics = nullptr;
+      links.n = nullptr;
+      links.p = nullptr;
+      links.l = nullptr;
+   }
   ~MdsData() {
     if (point != nullptr)
        delete [] point;
     if (param != nullptr)
        delete [] param;
 
+    if (indics != nullptr) {
+      delete [] indics;
+    }
+
     if (links.p != nullptr)
        delete [] links.p;
     if (links.n != nullptr)
        delete [] links.n;
+
     if (links.l != nullptr) {
       for (unsigned i=0;i<links.np;++i)
         delete [] links.l[i];

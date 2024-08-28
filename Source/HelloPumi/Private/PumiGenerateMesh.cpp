@@ -130,20 +130,20 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
         return;
     }
 
-    unsigned test0 = 1000;
-    int test = test0;
-    UE_LOG(HelloPumiLog, Log, TEXT("unsigned = %u, int = %d, %u"),test0,test,test);
+    // unsigned test0 = 1000;
+    // int test = test0;
+    // UE_LOG(HelloPumiLog, Log, TEXT("unsigned = %u, int = %d, %u"),test0,test,test);
 
     IFileHandle* hFile = shf.Get();
-    int64 pos = hFile->Tell();
-    UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
+    // int64 pos = hFile->Tell();
+    // UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
 
     // 2. Read Header
     SmbHeader smbHead;
     bool ok = readSmbHeader(hFile,smbHead);
 
-    pos = hFile->Tell();
-    UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
+    // pos = hFile->Tell();
+    // UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
 
     // 3. Read SMB Mesh Data
     SmbMeshData smbMesh;
@@ -153,8 +153,8 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
         return;
     }
     
-    pos = hFile->Tell();
-    UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
+    // pos = hFile->Tell();
+    // UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
 
     // 4. create mds data with smbMesh
     MdsData mdsData;
@@ -163,8 +163,8 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
         UE_LOG(HelloPumiLog, Log, TEXT("failed to create mds data"));
         return;
     }
-    pos = hFile->Tell();
-    UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
+    // pos = hFile->Tell();
+    // UE_LOG(HelloPumiLog, Log, TEXT("pos = %ld"),pos);
 
     // 5. Read Link Connection Data
     SmbConnect smbConn;
@@ -181,16 +181,30 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
         return;
     }
 
-    // copy points into array buffer
-    double x,y,z,u,v;
-    for (unsigned i=0;i<smbMesh.n[SMB_VERT];++i)
+    // 6. Read Links
+    ok = readSmbRemotes(hFile, &mdsData.links);
+    if (!ok) {
+        UE_LOG(HelloPumiLog, Log, TEXT("failed to read smb remotes"));
+        //return;
+    }
+
+
+    // 7. Copy mds points and indics buffer to delegate
+    double x,y,z;
+    TArray<FVector> mdsPoints;
+    TArray<int32> mdsIndics;
+    for (unsigned i=0;i<mdsData.cap[MDS_VERTEX];++i)
     {
-        x = mdsData.point[i][0] * 100;
-        y = mdsData.point[i][1] * 100;
-        z = mdsData.point[i][2] * 100;
+        x = mdsData.point[i][0] * 100.f;
+        y = mdsData.point[i][1] * 100.f;
+        z = mdsData.point[i][2] * 100.f;
         mdsPoints.Add(FVector(x,y,z));
+        mdsIndics.Add(mdsData.indics[i][0]);
+        mdsIndics.Add(mdsData.indics[i][1]);
+        mdsIndics.Add(mdsData.indics[i][2]);
 
 #if 0 // for debug
+    double u,v;
         if (smbHead.version >= 2) {
             u = mdsData.param[i][0];
             v = mdsData.param[i][1];
@@ -198,15 +212,9 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
         }
 #endif
     }
-    // DelPointsDataLoadFinished.ExecuteIfBound(mdsPoints, mdsParams);
 
-    // 6. Read Links
-    ok = readSmbRemotes(hFile, &mdsData.links);
-    if (!ok) {
-        UE_LOG(HelloPumiLog, Log, TEXT("failed to read smb remotes"));
-        return;
-    }
-
+    // 8. Post delegation
+    DelPointsDataLoadFinished.ExecuteIfBound(mdsPoints, mdsIndics);
 }
 
 bool UPumiGenerateMesh::readSmbHeader(IFileHandle* hFile, SmbHeader& outHeader)
@@ -304,30 +312,33 @@ bool UPumiGenerateMesh::readSmbConn(
     conn = outSmbConn[SMB_EDGE];
     int down_n = down_degree(MDS_EDGE);
     unsigned (*mdsEdge)[2] = new unsigned[cap][2];
+    UE_LOG(HelloPumiLog, Log, TEXT("mdsEdge=%u, down_n=%d"),cap,down_n);
     for (mds_id j = 0;j<cap;++j) {
-      for (int k = 0; k < down.n; ++k) {
-          mdsEdge[j][k] = conn[j * down.n + k]; // mds_index
+      for (int k = 0; k < down_n; ++k) {
+          mdsEdge[j][k] = conn[j * down_n + k]; // mds vertex index
       }
     }
 
     cap = mdsCap[MDS_TRIANGLE];
-    mds_id edgeCap = mdsCap[MDS_EDGE];
     conn = outSmbConn[SMB_TRI];
     down_n = down_degree(MDS_TRIANGLE);
-    int idex[6];
+    int edgeIndex[3];
     outMdsData.indics = new int[cap][3];
     int (*indics)[3] = outMdsData.indics;
+    UE_LOG(HelloPumiLog, Log, TEXT("mdsTri=%u, down_n=%d"),cap,down_n);
     for (mds_id j = 0;j<cap;++j) {
-      for (int k = 0; k < down.n; ++k) {
-          mds_index = conn[j * down.n + k];
-          idex[k*2+0] = mdsEdge[mds_index][0];
-          idex[k*2+1] = mdsEdge[mds_index][1];
-          indics[j][0] = idex[0];
-          indics[j][1] = idex[1];
-          indics[j][2] = 0; // TODO
+      for (int k = 0; k < down_n; k+=3) {
+          edgeIndex[0] = conn[j * down_n + k];
+          edgeIndex[1] = conn[j * down_n + k+1];
+          // UE_LOG(HelloPumiLog, Log, TEXT("edgeIndex0=%d, edgeIndex1=%d"),edgeIndex[0],edgeIndex[1]);
+          indics[j][0] = mdsEdge[edgeIndex[0]][0];
+          indics[j][1] = mdsEdge[edgeIndex[0]][1];
+          if (mdsEdge[edgeIndex[0]][0] != mdsEdge[edgeIndex[1]][0]
+          && mdsEdge[edgeIndex[0]][1] != mdsEdge[edgeIndex[1]][0])
+            indics[j][2] = mdsEdge[edgeIndex[1]][0];
+          else
+            indics[j][2] = mdsEdge[edgeIndex[1]][1];
       }
-    }
-
     }
 
     delete [] mdsEdge;
@@ -348,9 +359,11 @@ bool UPumiGenerateMesh::readSmbPoints(
     if (version >= 2)
         read_doubles(hFile, param, 2 * smbVerts);
     else {
-        unsigned pi, pj;
-        for (pi = 0; pi < smbVerts; ++pi) {
-          for (pj = 0; pj < 2; ++pj) outMdsData.param[pi][pj] = 0.0;
+        // unsigned pi, pj;
+        for (unsigned pi = 0; pi < smbVerts; ++pi) {
+          // for (pj = 0; pj < 2; ++pj) outMdsData.param[pi][pj] = 0.0;
+          outMdsData.param[pi][0] = 0.0;
+          outMdsData.param[pi][1] = 0.0;
         }
     }
 
