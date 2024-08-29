@@ -3,6 +3,7 @@
 #include "PumiGenerateMesh.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "KismetProceduralMeshLibrary.h"
+#include "DynamicMesh/DynamicMeshAttributeSet.h"
 
 // Sets default values
 APumiActor::APumiActor()
@@ -80,11 +81,13 @@ void APumiActor::GenerateProceduralMesh100(const TArray<FVector>& points, const 
 	TArray<FVector> normals;
 	for (int i=0;i<indics.Num()/3-2;i+=3) {
 		FVector one = points[indics[i*3+1]] - points[indics[i*3]];
-		FVector two = points[indics[i*3+1]] - points[indics[i*3+2]];
-		FVector norm = UKismetMathLibrary::Cross_VectorVector(one,two);
-		Normalize(norm);
-		normals.Add(norm);
+		FVector two = points[indics[i*3+2]] - points[indics[i*3]];
+		// FVector n = UKismetMathLibrary::Cross_VectorVector(one,two);
+		FVector n = FVector::CrossProduct(one,two);
+		n.Normalize();
+		normals.Add(n);
 	}
+
 
 	UE_LOG(HelloPumiLog, Log, TEXT("Verts num=%d"), points.Num());
 	UE_LOG(HelloPumiLog, Log, TEXT("Index num=%d"), indics.Num()/3);
@@ -94,7 +97,7 @@ void APumiActor::GenerateProceduralMesh100(const TArray<FVector>& points, const 
 	if (vertCap%2 == 1)
 	    vertCap -= 1;
 
-    const float scaleWeight = 100.0f;
+    const float scaleWeight = 10.0f;
 	float uvDistance = 0.0f;
 	float vrtDistanceScale = FVector3d::Distance(points[0],points[1]) / scaleWeight;
 	TArray<FVector2D> UVs;
@@ -111,13 +114,13 @@ void APumiActor::GenerateProceduralMesh100(const TArray<FVector>& points, const 
     TArray<FVector> normals2;
 	TArray<FProcMeshTangent> tangents;
 	TArray<FLinearColor> vertexColors;
-	vertexColors.Add(FLinearColor(0.65, 0.65, 0.65, 1.0));
-	vertexColors.Add(FLinearColor(0.65, 0.65, 0.65, 1.0));
-	vertexColors.Add(FLinearColor(0.65, 0.65, 0.65, 1.0));
+	vertexColors.Add(FLinearColor(0.70, 0.70, 0.85, 1.0));
+	vertexColors.Add(FLinearColor(0.70, 0.70, 0.85, 1.0));
+	vertexColors.Add(FLinearColor(0.70, 0.70, 0.85, 1.0));
 
-    UKismetProceduralMeshLibrary::CalculateTangentsForMesh(points,indics,UVs,normals2, tangents);
+    UKismetProceduralMeshLibrary::CalculateTangentsForMesh(points,indics,UVs,normals, tangents);
 
-#if 0
+#if 1
 	mesh->CreateMeshSection_LinearColor(0, points, indics, normals, UVs, vertexColors, tangents, true);
 #else
 	mesh->CreateMeshSection(0, points, indics, normals, UVs,  TArray<FColor>(), TArray<FProcMeshTangent>(), false);
@@ -129,4 +132,27 @@ void APumiActor::GenerateProceduralMesh100(const TArray<FVector>& points, const 
 void APumiActor::GenerateProceduralMesh200(const TArray<FVector>& points, const TArray<int32>& indics)
 {
 	//UE::Geometry::FPolygon2d polyg = FPoloygon3D(points);
+	bool bNormals = true;
+	bool bTexCoords = false;
+	bool bVertexColors = false;
+	
+	for (const FVector& v: points)
+	{
+		SourceMesh.AppendVertex(FVector3d(v.X,v.Y,v.Z));
+	}
+
+	if (bNormals || bTexCoords)
+	{
+		SourceMesh.EnableAttributes();
+	}
+
+	FDynamicMeshNormalOverlay* Normals = (bNormals) ? SourceMesh.Attributes()->PrimaryNormals() : nullptr;
+	FDynamicMeshUVOverlay* UVs = (bTexCoords) ? SourceMesh.Attributes()->PrimaryUV() : nullptr;
+
+#if 0
+	UGeometryScriptLibrary_MeshNormalsFunctions::ComputeSplitNormals(SourceMesh,
+	FGeometryScriptSplitNormalsOptions(), FGeometryScriptCalculateNormalsOptions());
+	#endif
+
+
 }

@@ -189,19 +189,16 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
     }
 
 
-    // 7. Copy mds points and indics buffer to delegate
+    // 7. Copy mds points and tri buffer to delegate
     double x,y,z;
     TArray<FVector> mdsPoints;
-    TArray<int32> mdsIndics;
+    TArray<int32> mdsTris;
     for (unsigned i=0;i<mdsData.cap[MDS_VERTEX];++i)
     {
-        x = mdsData.point[i][0] * 100.f;
-        y = mdsData.point[i][1] * 100.f;
-        z = mdsData.point[i][2] * 100.f;
+        x = mdsData.point[i][0] * 10.f;
+        y = mdsData.point[i][1] * 10.f;
+        z = mdsData.point[i][2] * 10.f;
         mdsPoints.Add(FVector(x,y,z));
-        mdsIndics.Add(mdsData.indics[i][0]);
-        mdsIndics.Add(mdsData.indics[i][1]);
-        mdsIndics.Add(mdsData.indics[i][2]);
 
 #if 0 // for debug
     double u,v;
@@ -213,8 +210,15 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
 #endif
     }
 
+    for (unsigned j=0;j<mdsData.cap[MDS_TRIANGLE];++j)
+    {
+      mdsTris.Add(mdsData.tri[j][0]);
+      mdsTris.Add(mdsData.tri[j][1]);
+      mdsTris.Add(mdsData.tri[j][2]);
+    }
+
     // 8. Post delegation
-    DelPointsDataLoadFinished.ExecuteIfBound(mdsPoints, mdsIndics);
+    DelPointsDataLoadFinished.ExecuteIfBound(mdsPoints, mdsTris);
 }
 
 bool UPumiGenerateMesh::readSmbHeader(IFileHandle* hFile, SmbHeader& outHeader)
@@ -307,15 +311,15 @@ bool UPumiGenerateMesh::readSmbConn(
         }
     }
 
-    // retrieve indics
+    // copy index data
     cap = mdsCap[MDS_EDGE];
     conn = outSmbConn[SMB_EDGE];
     int down_n = down_degree(MDS_EDGE);
     unsigned (*mdsEdge)[2] = new unsigned[cap][2];
     UE_LOG(HelloPumiLog, Log, TEXT("mdsEdge=%u, down_n=%d"),cap,down_n);
-    for (mds_id j = 0;j<cap;++j) {
+    for (mds_id j=0;j<cap;++j) {
       for (int k = 0; k < down_n; ++k) {
-          mdsEdge[j][k] = conn[j * down_n + k]; // mds vertex index
+          mdsEdge[j][k] = conn[j * down_n + k]; // a edge has two vertexs
       }
     }
 
@@ -323,21 +327,21 @@ bool UPumiGenerateMesh::readSmbConn(
     conn = outSmbConn[SMB_TRI];
     down_n = down_degree(MDS_TRIANGLE);
     int edgeIndex[3];
-    outMdsData.indics = new int[cap][3];
-    int (*indics)[3] = outMdsData.indics;
+    outMdsData.tri = new int[cap][3];
+    int (*tri)[3] = outMdsData.tri;
     UE_LOG(HelloPumiLog, Log, TEXT("mdsTri=%u, down_n=%d"),cap,down_n);
     for (mds_id j = 0;j<cap;++j) {
       for (int k = 0; k < down_n; k+=3) {
           edgeIndex[0] = conn[j * down_n + k];
           edgeIndex[1] = conn[j * down_n + k+1];
           // UE_LOG(HelloPumiLog, Log, TEXT("edgeIndex0=%d, edgeIndex1=%d"),edgeIndex[0],edgeIndex[1]);
-          indics[j][0] = mdsEdge[edgeIndex[0]][0];
-          indics[j][1] = mdsEdge[edgeIndex[0]][1];
+          tri[j][0] = mdsEdge[edgeIndex[0]][0];
+          tri[j][1] = mdsEdge[edgeIndex[0]][1];
           if (mdsEdge[edgeIndex[0]][0] != mdsEdge[edgeIndex[1]][0]
           && mdsEdge[edgeIndex[0]][1] != mdsEdge[edgeIndex[1]][0])
-            indics[j][2] = mdsEdge[edgeIndex[1]][0];
+            tri[j][2] = mdsEdge[edgeIndex[1]][0];
           else
-            indics[j][2] = mdsEdge[edgeIndex[1]][1];
+            tri[j][2] = mdsEdge[edgeIndex[1]][1];
       }
     }
 

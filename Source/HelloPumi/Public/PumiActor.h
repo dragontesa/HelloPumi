@@ -5,14 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
+#include "DynamicMesh/DynamicMesh3.h"
 #include "Math/MathFwd.h"
 #include "PumiActor.generated.h"
 
 UCLASS(Blueprintable, meta = (DisplayName = "Hello Pumi Actor"), ClassGroup = (Custom))
 class HELLOPUMI_API APumiActor : public AActor
 {
+	using FDynamicMesh3 = UE::Geometry::FDynamicMesh3;
 	GENERATED_BODY()
-	
+
+
 public:	
 	// Sets default values for this actor's properties
 	APumiActor();
@@ -34,13 +37,15 @@ protected:
 private:
     void GenerateProceduralMesh100(const TArray<FVector>& points, const TArray<int32>& indics);
 	void GenerateProceduralMesh200(const TArray<FVector>& points, const TArray<int32>& indics);
-	
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProceduralMeshComponent> mesh;
+	
+	private:
+	FDynamicMesh3 SourceMesh;
 	class UPumiGenerateMesh* pumiGenerateMesh;
 };

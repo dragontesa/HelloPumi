@@ -14,8 +14,10 @@ public class HelloPumi : ModuleRules
 			 , "Engine"
 			 , "InputCore"
 			 , "EnhancedInput"
-			 , "ProceduralMeshComponent"
 			 , "GeometryCore"
+			 , "DynamicMesh"
+			 , "GeometryFramework"
+			 , "ProceduralMeshComponent"
 			 , });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

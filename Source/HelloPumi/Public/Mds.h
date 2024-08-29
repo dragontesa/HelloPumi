@@ -68,7 +68,7 @@ struct MdsData
   mds_id cap[MDS_TYPES];
   double (*point)[3];
   double (*param)[2];
-  int    (*indics)[3];
+  int    (*tri)[3];
   struct mds_links links;
   mds_set down;
 
@@ -76,7 +76,7 @@ struct MdsData
    {
       point = nullptr;
       param = nullptr;
-      indics = nullptr;
+      tri = nullptr;
       links.n = nullptr;
       links.p = nullptr;
       links.l = nullptr;
@@ -87,8 +87,8 @@ struct MdsData
     if (param != nullptr)
        delete [] param;
 
-    if (indics != nullptr) {
-      delete [] indics;
+    if (tri != nullptr) {
+      delete [] tri;
     }
 
     if (links.p != nullptr)
