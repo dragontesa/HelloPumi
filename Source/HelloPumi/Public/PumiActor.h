@@ -9,6 +9,7 @@
 #include "Math/MathFwd.h"
 #include "PumiActor.generated.h"
 
+
 UCLASS(Blueprintable, meta = (DisplayName = "Hello Pumi Actor"), ClassGroup = (Custom))
 class HELLOPUMI_API APumiActor : public AActor
 {
@@ -26,7 +27,7 @@ public:
 
     // callbacked from PumiGenerateMesh
 	UFUNCTION()
-    void OnPumiPointsDataLoaded(const TArray<FVector>& points, const TArray<int32>& indics);
+    void OnPumiPointsDataLoaded(const TArray<FVector>& vertics, const TArray<int32>& indics);
 
 protected:
 	// Called when the game starts or when spawned
@@ -35,17 +36,20 @@ protected:
 	virtual void PostLoad() override;
 
 private:
-    void GenerateProceduralMesh100(const TArray<FVector>& points, const TArray<int32>& indics);
-	void GenerateProceduralMesh200(const TArray<FVector>& points, const TArray<int32>& indics);
+    void GenerateProceduralMesh100(const TArray<FVector>& vertics, const TArray<int32>& indics);
+	void GenerateProceduralMesh200(const TArray<FVector>& vertics, const TArray<int32>& indics);
+	void GenerateProceduralMesh300(const TArray<FVector>& vertics, const TArray<int32>& indics);
+	void GenerateProceduralMeshWithDynamicMesh(FDynamicMesh3& dynMesh);
+	void UpdateMeshComponent();
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<UProceduralMeshComponent> mesh;
+	TObjectPtr<UProceduralMeshComponent> pmc;
 	
 	private:
-	FDynamicMesh3 SourceMesh;
+	FDynamicMesh3 DynMesh3;
 	class UPumiGenerateMesh* pumiGenerateMesh;
 };

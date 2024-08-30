@@ -190,15 +190,23 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
 
 
     // 7. Copy mds points and tri buffer to delegate
-    double x,y,z;
+    const int32 NumTri = mdsData.cap[MDS_TRIANGLE];
+    const int32 NumVert = mdsData.cap[MDS_VERTEX];
+    float scaleWeight = 10.f;
     TArray<FVector> mdsPoints;
     TArray<int32> mdsTris;
-    for (unsigned i=0;i<mdsData.cap[MDS_VERTEX];++i)
+    mdsPoints.Reserve(NumVert);
+    mdsTris.Reserve(NumTri);
+    // mdsPoints.SetNumUninitialized(NumVert); // MSVC에서 Delegate 호출 후에, setnumunitialized 로 지정한 개수보다 훨씬 많은 버퍼가 할당된다 
+    // mdsTris.SetNumUninitialized(NumTri*3);
+
+    for (int32 i=0; i < NumVert; ++i)
     {
-        x = mdsData.point[i][0] * 10.f;
-        y = mdsData.point[i][1] * 10.f;
-        z = mdsData.point[i][2] * 10.f;
-        mdsPoints.Add(FVector(x,y,z));
+      double x,y,z;
+      x = mdsData.point[i][0] * scaleWeight;
+      y = mdsData.point[i][1] * scaleWeight;
+      z = mdsData.point[i][2] * scaleWeight;
+      mdsPoints.Add(FVector(x,y,z));
 
 #if 0 // for debug
     double u,v;
@@ -210,11 +218,11 @@ void UPumiGenerateMesh::OnReadSmbProc(const TCHAR* smbFilePath)
 #endif
     }
 
-    for (unsigned j=0;j<mdsData.cap[MDS_TRIANGLE];++j)
+    for (int32 i=0;i<NumTri;++i)
     {
-      mdsTris.Add(mdsData.tri[j][0]);
-      mdsTris.Add(mdsData.tri[j][1]);
-      mdsTris.Add(mdsData.tri[j][2]);
+        mdsTris.Add(mdsData.tri[i][0]);
+        mdsTris.Add(mdsData.tri[i][1]);
+        mdsTris.Add(mdsData.tri[i][2]);
     }
 
     // 8. Post delegation
@@ -300,12 +308,12 @@ bool UPumiGenerateMesh::readSmbConn(
 
         UE_LOG(HelloPumiLog, Log, TEXT("entity %hs"), MDS_TYPE_NAMES[type_mds]);
         for (mds_id j = 0; j < cap; ++j) {
-            FString logIds = FString::Printf(TEXT("\tID %d :"),j);
+            FString logIds = FString::Printf(TEXT("\tID %2d :"),j);
             FString logConnecty;
           for (int k = 0; k < down.n; ++k) {
             mds_index = conn[j * down.n + k];
             down.e[k] = mds_identify(dt[k], mds_index);
-            logConnecty += FString::Printf(TEXT("%2d th connect %2d\t"), k, mds_index);
+            logConnecty += FString::Printf(TEXT("%2d th connect %-6d"), k, mds_index);
           }
           UE_LOG(HelloPumiLog, Log, TEXT("%s %s"), *logIds, *logConnecty);
         }
@@ -343,6 +351,7 @@ bool UPumiGenerateMesh::readSmbConn(
           else
             tri[j][2] = mdsEdge[edgeIndex[1]][1];
       }
+      UE_LOG(HelloPumiLog, Log, TEXT("TriIndex %u th = %d, %d, %d"), j, tri[j][0],tri[j][1],tri[j][2]);
     }
 
     delete [] mdsEdge;
